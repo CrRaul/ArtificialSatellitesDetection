@@ -12,8 +12,8 @@ from skimage.morphology import skeletonize
 # desc:
 def get8BitFitsData(data):
 		# Clip data to brightness limits
-	a = 150
-	b = 500
+	a = 10
+	b = 300
 
 	data[data > b] = b
 	data[data < a] = a
@@ -60,7 +60,7 @@ def openImage(imPath):
 
 def normalize(img):
 	imgS = img.copy() 
-	dst = np.zeros(shape=(5,5))
+	dst = np.zeros(shape=(8,8))
 	imgNorm=cv2.normalize(imgS,dst,0,255,cv2.NORM_MINMAX)
 	return imgNorm
 
@@ -93,7 +93,7 @@ def lineDetection(img):
 	theta = np.pi / 180  # angular resolution in radians of the Hough grid
 	threshold = 8  # minimum number of votes (intersections in Hough grid cell)
 	min_line_length = 8  # minimum number of pixels making up a line
-	max_line_gap = 3  # maximum gap in pixels between connectable line segments
+	max_line_gap = 2  # maximum gap in pixels between connectable line segments
 
 	# Run Hough on edge detected image
 	# Output "lines" is an array containing endpoints of detected line segments
@@ -148,6 +148,9 @@ def plotLineDetection(img,lines):
 			maxLen = le
 	imgS = np.copy(img)
 	cv2.line(imgS,(lines[maxLenPos][0][0],lines[maxLenPos][0][1]),(lines[maxLenPos][0][2],lines[maxLenPos][0][3]),(255,255,255),2)
+	
+	cv2.circle(imgS,(lines[maxLenPos][0][0],lines[maxLenPos][0][1]), 15, (255,255,255),5)
+
 	return imgS
 
 
@@ -173,7 +176,7 @@ def skeletonize(img):
 
 
 
-img = openImage("Galileo103B023.FIT")
+img = openImage("Galileo0104A031.FIT")
 
 imgNorm = normalize(img)
 
@@ -187,17 +190,17 @@ binWithSatelliteImg = binImage(noStarsBlurImg)
 
 lines = lineDetection(binWithSatelliteImg)
 
+
 if lines is not None:
 	print(lines)
 	imgL = plotLineDetection(img, lines)
 
 
-
 f, axarr = plt.subplots(3,2)
 plt.gray()
 
-titles = ["Original", "Normalize", "WithoutStars","Blur","Binary","DetectionSat"]
-images = [img,imgNorm,noStarsImg,noStarsBlurImg,binWithSatelliteImg,imgL]
+titles = ["Original", "Normalized", "NoStars","Blur","Binary","DetectSat"]
+images = [img,imgNorm,noStarsImg,noStarsBlurImg,binWithSatelliteImg]
 
 for i in range(len(images)):
 	plt.subplot(2,3,i+1), plt.imshow(images[i],'gray')
